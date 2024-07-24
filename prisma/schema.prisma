@@ -24,9 +24,46 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
+  quizzes       Quizz[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
+  @@unique([id, name])
+}
+
+model Quizz {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  picture     String
+  category    String
+  difficulty  String
+  questions   Question[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId, userName], references: [id, name])
+  userId      String
+  userName    String
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  title     String
+  quizzId   String
+  quizz     Quizz    @relation(fields: [quizzId], references: [id], onDelete: Cascade)
+  answers   Answer[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  title      String
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  isCorrect  Boolean
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Account {

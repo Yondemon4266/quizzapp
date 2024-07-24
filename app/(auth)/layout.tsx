@@ -14,31 +14,32 @@ export default async function Layout({
 }>) {
   const session = await auth();
 
-  //   if (!session) {
-  //     redirect("/");
-  //   }
-  return (
-    <section className="h-full w-full flex items-center justify-center">
-      <div className="w-[1000px] h-[600px] border-2 p-4">
-        <form
-          action={async () => {
-            "use server";
-            await signIn("google");
-          }}
-        >
-          <button type="submit">Sign in</button>
-        </form>
+  if (session) {
+    return redirect("/");
+  } else {
+    return (
+      <section className="h-full w-full flex items-center justify-center">
+        <div className="w-[1000px] h-[600px] border-2 p-4">
+          <form
+            action={async () => {
+              "use server";
+              await signIn("google");
+            }}
+          >
+            <button type="submit">Sign in</button>
+          </form>
 
-        <form
-          action={async () => {
-            "use server";
-            await signOut();
-          }}
-        >
-          <button type="submit">Sign Out</button>
-        </form>
-        {children}
-      </div>
-    </section>
-  );
+          <form
+            action={async () => {
+              "use server";
+              await signOut();
+            }}
+          >
+            <button type="submit">Sign Out</button>
+          </form>
+          {children}
+        </div>
+      </section>
+    );
+  }
 }

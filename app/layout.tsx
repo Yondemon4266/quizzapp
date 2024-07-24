@@ -19,21 +19,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased flex flex-col gap-6 p-6",
-          inter.className
-        )}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          {children}
-        </ThemeProvider>
+      <body className={cn(inter.className)}>
+        <div className="min-h-screen overflow-y-auto w-screen bg-background font-sans antialiased flex flex-col gap-6 p-6">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navbar />
+            {children}
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );

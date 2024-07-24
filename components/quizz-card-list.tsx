@@ -1,11 +1,16 @@
 import React from "react";
 import QuizzCard from "./quizz-card";
+import { QuizzListWithQuestionsType } from "@/app/types";
 
-export default function QuizzCardList() {
+export default function QuizzCardList({
+  quizzes,
+}: {
+  quizzes: QuizzListWithQuestionsType;
+}) {
   return (
     <div className="flex flex-row flex-wrap gap-4 justify-center">
-      {"abcdefghijklmnopqrstuvwxyz".split("").map((letter) => (
-        <QuizzCard key={letter} />
+      {quizzes.map((quizz) => (
+        <QuizzCard key={quizz.id} quizz={quizz} />
       ))}
     </div>
   );

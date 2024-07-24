@@ -1,6 +1,16 @@
+"use client";
+
 import React from "react";
-import { Button } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
+import Link from "next/link";
 
 export default function AddQuizzButton() {
-  return <Button className="w-fit">Add a quizz</Button>;
+  return (
+    <Link
+      className={buttonVariants({ variant: "default" })}
+      href={"/create-quizz"}
+    >
+      Add a quizz
+    </Link>
+  );
 }
