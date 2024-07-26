@@ -32,6 +32,8 @@ import Image from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { createInitialQuizz } from "../actions/quizz-actions";
 
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
@@ -40,7 +42,7 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/webp",
 ];
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB in bytes
-const category = [
+const categories = [
   "light",
   "dark",
   "mixed",
@@ -54,7 +56,7 @@ const category = [
   "literature",
   "art",
 ];
-const formSchema = z.object({
+export const formSchema = z.object({
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
@@ -68,7 +70,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Difficulty must be at least 2 characters" }),
   picture: z
-    .any()
+    .instanceof(File, { message: "Picture is required" })
     .refine(
       (file) =>
         file &&
@@ -86,6 +88,7 @@ const formSchema = z.object({
     }),
 });
 
+export type CreateInitialQuizzFormValuesType = z.infer<typeof formSchema>;
 export default function CreateQuizzForm() {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -95,15 +98,18 @@ export default function CreateQuizzForm() {
       description: "",
       category: "",
       difficulty: "",
-      picture: "",
+      picture: new File([], ""),
     },
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
+    await fetch("/api/create-quizz", {
+      method: "POST",
+      body: JSON.parse(JSON.stringify(values)),
+    });
   }
 
   return (
@@ -114,7 +120,7 @@ export default function CreateQuizzForm() {
           control={form.control}
           name="title"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="min-w-fit max-w-[250px] mx-auto flex flex-col  justify-center items-center">
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your title here..." {...field} />
@@ -132,6 +138,7 @@ export default function CreateQuizzForm() {
           render={({ field: { value, onChange, ...fieldProps } }) => (
             <>
               <FormItem className="flex flex-col gap-4 items-center justify-center">
+                <FormLabel className="uppercase">Picture</FormLabel>
                 <FormLabel className="group cursor-pointer">
                   <div className="relative w-[300px] h-[200px] mx-auto flex items-center justify-center">
                     <AspectRatio
@@ -140,7 +147,8 @@ export default function CreateQuizzForm() {
                     >
                       <Image
                         src={
-                          form.watch("picture")
+                          form.watch("picture") &&
+                          form.watch("picture")?.type.startsWith("image")
                             ? URL.createObjectURL(form.watch("picture"))
                             : "/logo.png"
                         }
@@ -149,7 +157,8 @@ export default function CreateQuizzForm() {
                         fill
                       />
                     </AspectRatio>
-                    <span className="hidden group-hover:flex fixed font-semibold text-xl uppercase">
+
+                    <span className="hidden group-hover:flex absolute font-semibold text-xl uppercase">
                       {value ? "Change the picture" : "Upload a picture"}
                     </span>
                   </div>
@@ -179,7 +188,7 @@ export default function CreateQuizzForm() {
           control={form.control}
           name="description"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="max-w-[800px] mx-auto flex flex-col  justify-center items-center">
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
@@ -195,9 +204,99 @@ export default function CreateQuizzForm() {
         />
         {/* END DESCRIPTION */}
         {/* CATEGORY */}
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem className="flex flex-col w-fit mx-auto items-center ">
+              <FormLabel>Category</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn("w-[200px] justify-between")}
+                    >
+                      {field.value
+                        ? categories.find(
+                            (category) => category === field.value
+                          )
+                        : "Select category"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0" side="top">
+                  <Command>
+                    <CommandInput placeholder="Search a category..." />
+                    <CommandList>
+                      <CommandEmpty>No category found.</CommandEmpty>
+                      <CommandGroup>
+                        {categories.map((category) => (
+                          <CommandItem
+                            value={category}
+                            key={category}
+                            onSelect={() => {
+                              form.setValue("category", category);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                category === field.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {category}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* END CATEGORY */}
-        <Button type="submit">Submit</Button>
+        {/* DIFFICULTY */}
+        <FormField
+          control={form.control}
+          name="difficulty"
+          render={({ field }) => (
+            <FormItem className="max-w-[800px] mx-auto flex flex-col  justify-center items-center">
+              <FormLabel>Difficulty</FormLabel>
+              <FormControl>
+                <ToggleGroup
+                  type="single"
+                  value={field.value}
+                  onValueChange={(e) => form.setValue("difficulty", e)}
+                >
+                  {["easy", "medium", "hard"].map((difficulty) => (
+                    <ToggleGroupItem
+                      key={difficulty}
+                      value={difficulty}
+                      aria-label={difficulty}
+                    >
+                      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* END DIFFICULTY */}
+        <Button type="submit" className="">
+          Submit
+        </Button>
       </form>
     </Form>
   );

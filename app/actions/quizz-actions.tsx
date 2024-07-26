@@ -2,6 +2,10 @@
 
 import prisma from "@/prisma/db";
 import { Question, Quizz } from "@prisma/client";
+import {
+  CreateInitialQuizzFormValuesType,
+  formSchema,
+} from "../create-quizz/create-quizz-form";
 
 const QUIZZ_PER_PAGE = 5;
 
@@ -58,6 +62,18 @@ export async function getQuizzesQueryAndPageTotalPages(query: string) {
     });
     const totalPages = Math.ceil(quizzesCount / QUIZZ_PER_PAGE);
     return totalPages;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function createInitialQuizz(
+  formData: CreateInitialQuizzFormValuesType
+) {
+  console.log(formData);
+
+  try {
   } catch (error) {
     console.error(error);
     throw error;
