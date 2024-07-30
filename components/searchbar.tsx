@@ -22,6 +22,7 @@ export default function Searchbar() {
   return (
     <Input
       type="text"
+      name="search"
       placeholder="Search a quizz..."
       className="w-fit text-center placeholder:text-center"
       onChange={(e) => handleSearch(e.target.value)}

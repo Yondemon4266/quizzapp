@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className)}>
-        <div className="h-screen overflow-y-auto w-screen bg-background font-sans antialiased flex flex-col gap-6 p-6">
+        <div className="min-h-screen overflow-hidden  bg-background font-sans antialiased flex flex-col gap-6 p-6">
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

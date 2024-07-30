@@ -33,7 +33,7 @@ model User {
 
 model Quizz {
   id          String     @id @default(cuid())
-  title       String
+  title       String     @unique
   description String
   picture     String
   category    String
