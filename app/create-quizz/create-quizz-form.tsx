@@ -35,6 +35,8 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formSchema } from "../api/create-quizz/route";
 import CreatedQuizzModal from "./created-quizz-modal";
+import { Quizz } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 const categories = [
   "light",
@@ -53,6 +55,8 @@ const categories = [
 
 export type CreateInitialQuizzFormValuesType = z.infer<typeof formSchema>;
 export default function CreateQuizzForm() {
+  const router = useRouter();
+
   // 1. Define your form.
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -82,13 +86,15 @@ export default function CreateQuizzForm() {
         method: "POST",
         body: formData,
       });
-      if (!res.ok) {
+      if (!res.ok && res.statusText === "title") {
         const data = await res.json();
-        if (data.tag && data.tag === "quiz-title-already-exists") {
-          form.setError("title", {
-            message: data.message,
-          });
-        }
+
+        form.setError("title", {
+          message: data.message,
+        });
+      } else {
+        const quizzId = await res.json();
+        router.push(`/create-quizz/${quizzId}`);
       }
     } catch (e) {
       console.log(e);
@@ -288,7 +294,15 @@ export default function CreateQuizzForm() {
             )}
           />
           {/* END DIFFICULTY */}
-          <Button type="submit">Submit</Button>
+          <div className="flex items-center">
+            <Button
+              type="submit"
+              className="mx-auto"
+              disabled={form.formState.isSubmitting}
+            >
+              Submit
+            </Button>
+          </div>
         </form>
       </Form>
     </>

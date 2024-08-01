@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/prisma/db";
+import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -66,24 +67,24 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               message: "A quiz with this title already exists.",
-              tag: "quiz-title-already-exists",
             },
-            { status: 400 }
+            { status: 400, statusText: "title" }
           );
         }
         // CREATE THE QUIZZ IF IT DOESN'T EXIST
-        await prisma.quizz.create({
+        const quizz = await prisma.quizz.create({
           data: {
-            title: formData.get("title") as string,
-            category: formData.get("category") as string,
+            title: (formData.get("title") as string).toLowerCase(),
+            category: (formData.get("category") as string).toLowerCase(),
             description: formData.get("description") as string,
-            difficulty: formData.get("difficulty") as string,
+            difficulty: (formData.get("difficulty") as string).toLowerCase(),
             picture: "https://via.placeholder.com/150",
             userId: session.user.id,
             userName: session.user.name,
           },
         });
-        return new NextResponse("Quizz created", { status: 201 });
+
+        return NextResponse.json(quizz.id, { status: 201 });
       } else {
         return NextResponse.json(
           {

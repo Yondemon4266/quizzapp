@@ -9,7 +9,7 @@ export default async function CreateQuizzPage() {
   } else {
     return (
       <div>
-        <h2>Quizz creation</h2>
+        <h2 className="text-center text-xl mb-6 uppercase">Quizz creation</h2>
         <CreateQuizzForm />
       </div>
     );
